@@ -14,12 +14,21 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed; // Die Geschwindigkeit des Spielers
     public Animator anim; // Der Animator für die Animationen des Spielers
     public float pickupRange = 1.5f;
-    public Weapon activeWeapon;
+    // public Weapon activeWeapon;
+
+    public List<Weapon> unassignedWeapons, assignedWeapons;
+
+    public int maxWeapon = 3;
+    [HideInInspector]
+    public List<Weapon> fullyLevelledWeapon = new List<Weapon>();
 
     // Start is called before the first frame update
     void Start()
     {
-        // Diese Funktion wird zu Beginn des Spiels aufgerufen und initialisiert den Spieler
+        if (assignedWeapons.Count == 0)
+        {
+            AddWeapon(Random.Range(0, unassignedWeapons.Count)); // Diese Funktion wird zu Beginn des Spiels aufgerufen und initialisiert den Spieler
+        }
     }
 
     // Update is called once per frame
@@ -41,5 +50,20 @@ public class PlayerController : MonoBehaviour
         {
             anim.SetBool("isMoving", false); // Setze die Animator-Variable "isMoving" auf "false", um die Bewegungsanimation zu stoppen
         }
+    }
+    public void AddWeapon(int weaponNumber)
+    {
+        if(weaponNumber < unassignedWeapons.Count)
+        {
+            assignedWeapons.Add(unassignedWeapons[weaponNumber]);
+            unassignedWeapons[weaponNumber].gameObject.SetActive(true);
+            unassignedWeapons.RemoveAt(weaponNumber);
+        }
+    }
+    public void AddWeapon(Weapon weaponToAdd)
+    {
+        weaponToAdd.gameObject.SetActive(true);
+        assignedWeapons.Add(weaponToAdd);
+        unassignedWeapons.Remove(weaponToAdd);
     }
 }

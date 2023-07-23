@@ -9,7 +9,12 @@ public class EnemyDamager : MonoBehaviour
     private Vector3 targetSize; // Zielgröße für das Wachstum des Schadensverursachers
     public bool shouldKnockBack; // Gibt an, ob ein Rückstoß angewendet werden soll
     public bool destroyParent;
+    public bool damageOverTime;
+    public float timeBetweenDamage;
+    private float damageCounter;
+    private List<EnemyController> enemiesInRange = new List<EnemyController>();
 
+    public bool destroyOnImpact;
 
     void Start()
     {
@@ -37,13 +42,59 @@ public class EnemyDamager : MonoBehaviour
                 }
             }
         }
+        if(damageOverTime == true)
+        {
+            damageCounter -= Time.deltaTime;
+            if (damageCounter <= 0)
+            {
+                damageCounter = timeBetweenDamage;
+
+                for( int i = 0; i < enemiesInRange.Count; i++) 
+                {
+                    if (enemiesInRange[i] != null)
+                    {
+                        enemiesInRange[i].TakeDamage(damageAmount, shouldKnockBack);
+                    }
+                    else
+                    {
+                        enemiesInRange.RemoveAt(i);
+                        i--;
+                    }
+                }
+            }
+        }
+
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.tag == "Enemy") // Überprüfe, ob der Kollisionsgegenstand das Tag "Enemy" hat
+        if (damageOverTime == false)
         {
-            collision.GetComponent<EnemyController>().TakeDamage(damageAmount, shouldKnockBack); // Verursache Schaden am Kollisionsgegenstand (Gegner)
+            if (collision.tag == "Enemy") // Überprüfe, ob der Kollisionsgegenstand das Tag "Enemy" hat
+            {
+                collision.GetComponent<EnemyController>().TakeDamage(damageAmount, shouldKnockBack); // Verursache Schaden am Kollisionsgegenstand (Gegner)
+                if (destroyOnImpact)
+                {
+                    Destroy(gameObject);
+                }
+             }
+        }
+        else
+        {
+            if(collision.tag == "Enemy")
+            {
+                enemiesInRange.Add(collision.GetComponent<EnemyController>());
+            }
+        }
+    }
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if(damageOverTime == true)
+        {
+            if(collision.tag == "Enemy")
+            {
+                enemiesInRange.Remove(collision.GetComponent<EnemyController>());
+            }
         }
     }
 }

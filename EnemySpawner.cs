@@ -6,79 +6,79 @@ public class EnemySpawner : MonoBehaviour
 {
     public GameObject enemyToSpawn; // Das zu spawnende Gegnerobjekt
     public float timeToSpawn; // Zeit zwischen den Spawns
-    private float spawnCounter; // Zähler für den Spawn-Timer
+    private float spawnCounter; // Z�hler f�r den Spawn-Timer
     public Transform minSpawn, maxSpawn; // Bereich, in dem der Spawn stattfinden kann
     private Transform target; // Das Ziel des Spawners
     private float despawnDistance; // Entfernung, ab der die Gegner despawnen sollen
     private List<GameObject> spawnedEnemies = new List<GameObject>(); // Liste der gespawnten Gegner
-    public int checkPerFrame; // Anzahl der zu überprüfenden Gegner pro Frame
-    private int enemyToCheck; // Index des Gegners, der überprüft wird
-    public List<WaveInfo> waves; // Liste der Welleninformationen für die Gegner
-    private int currentWave; // Index der aktuellen Welle
-    private float waveCounter; // Zähler für den Timer der aktuellen Welle
+    public int checkPerFrame; // Anzahl der zu �berpr�fenden Gegner pro Frame
+    private int enemyToCheck; // Index des Gegners, der �berpr�ft wird
+    public List<WaveInfo> waves;
+    private int currentWave;
+    private float waveCounter;
 
     void Start()
     {
-        // spawnCounter = timeToSpawn; // Setze den Spawn-Zähler auf die Ausgangszeit
+        // spawnCounter = timeToSpawn; // Setze den Spawn-Z�hler auf die Ausgangszeit
 
         target = PlayerHealthController.instance.transform; // Setze das Ziel auf den Spieler
         despawnDistance = Vector3.Distance(transform.position, maxSpawn.position) + 4f; // Berechne die Entfernung, ab der die Gegner despawnen sollen
-        currentWave = -1; // Setzt den Wert von currentWave auf -1 als Startwert
-        GoToNextWave(); //Ruft die Methode auf, um zur nächsten Welle zu wechseln
+        currentWave = -1;
+        GoToNextWave();
     
     }
 
     void Update()
     {
-        if (PlayerHealthController.instance.gameObject.activeSelf) // Überprüft, ob das Game-Objekt des PlayerHealthControllers aktiv ist
+        if (PlayerHealthController.instance.gameObject.activeSelf)
         {
-            if (currentWave < waves.Count) // Überprüft, ob der Index currentWave innerhalb der Liste der Wellen liegt
+            if (currentWave < waves.Count)
             {
-                waveCounter -= Time.deltaTime; // Verringert den Counter der aktuellen Welle basierend auf die vergangene Zeit
+                waveCounter -= Time.deltaTime;
                 if (waveCounter <= 0)
                 {
-                    GoToNextWave(); // Wechselt zur nächsten Welle
+                    GoToNextWave();
                 }
             }
 
-            spawnCounter -= Time.deltaTime; // Verringert den Spawn Counter basierend auf die vergangene Zeit
-            if (spawnCounter <= 0) // Überprüft, ob der Spawn Counter kleiner oder gleich 0 ist
+            spawnCounter -= Time.deltaTime;
+            if (spawnCounter <= 0)
             {
-                spawnCounter = waves[currentWave].timeBetweenSpawns; // Setzt den Spawn Counter auf die Zeit zwischen den Spawns der aktuellen Welle
+                spawnCounter = waves[currentWave].timeBetweenSpawns;
 
-                GameObject newEnemy = Instantiate(waves[currentWave].enemyToSpawn, SelectSpawnPoint(), Quaternion.identity); // Erzeugt einen neuen Gegner basierend auf der aktuellen Welle
-                spawnedEnemies.Add(newEnemy); // Fügt den neu erzeugten Gegner zur Liste der gespawnten Gegner hinzu
+                GameObject newEnemy = Instantiate(waves[currentWave].enemyToSpawn, SelectSpawnPoint(), Quaternion.identity);
+                spawnedEnemies.Add(newEnemy);
             }
         }
 
         transform.position = target.position; // Positioniere den Spawner auf die Position des Ziels (Spieler)
 
-        int checkTarget = enemyToCheck + checkPerFrame; // Setzt das Überprüfungsziel für die Anzahl der zu überprüfenden Gegner pro Frame
+        int checkTarget = enemyToCheck + checkPerFrame;
 
-        while (enemyToCheck < checkTarget) // Führt die Schleife aus, solange der Wert von enemyToCheck kleiner als checkTarget ist
+        while (enemyToCheck < checkTarget)
         {
-            if (enemyToCheck < spawnedEnemies.Count) // Überprüft, ob der Index enemyToCheck innerhalb der Liste der gespawnten Gegner liegt
+            if (enemyToCheck < spawnedEnemies.Count)
             {
-                if (spawnedEnemies[enemyToCheck] == null) // Überprüft, ob der Gegner null ist, d.h. bereits zerstört wurde
+                if (spawnedEnemies[enemyToCheck] == null)
                 {
-                    spawnedEnemies.RemoveAt(enemyToCheck); // Entfernt den zerstörten Gegner aus der Liste der gespawnten Gegner
-                    checkTarget--; // Verringert das Überprüfungsziel, da ein Gegner entfernt wurde
+                    spawnedEnemies.RemoveAt(enemyToCheck);
+                    checkTarget--;
                 }
-                else if (Vector3.Distance(transform.position, spawnedEnemies[enemyToCheck].transform.position) > despawnDistance) // Überprüft, ob der Gegner die Entfernung überschritten hat, ab der er despawnen soll
+                else if (Vector3.Distance(transform.position, spawnedEnemies[enemyToCheck].transform.position) > despawnDistance)
                 {
-                    Destroy(spawnedEnemies[enemyToCheck]); // Zerstört den Gegner
-                    spawnedEnemies.RemoveAt(enemyToCheck); // Entfernt den zerstörten Gegner aus der Liste der gespawnten Gegner
-                    checkTarget--; // Verringert das Überprüfungsziel, da ein Gegner entfernt wurde
+                    Destroy(spawnedEnemies[enemyToCheck]);
+                    spawnedEnemies.RemoveAt(enemyToCheck);
+                    checkTarget--;
                 }
                 else
                 {
-                    enemyToCheck++; // Inkrementiert den Index enemyToCheck, um den nächsten Gegner zu überprüfen
+                    enemyToCheck++;
                 }
             }
             else
             {
-                enemyToCheck = 0; // Setzt enemyToCheck auf 0, um von vorne zu beginnen
-                checkTarget = 0; // Setzt das Überprüfungsziel auf 0, um die Schleife zu beenden
+                enemyToCheck = 0;
+                checkTarget = 0;
             }
         }
     }
@@ -87,7 +87,7 @@ public class EnemySpawner : MonoBehaviour
     {
         Vector3 spawnPoint = Vector3.zero;
 
-        bool spawnVerticalEdge = (Random.Range(0f, 1f) > .5f); // Entscheide zufällig, ob der Spawn-Punkt an einem vertikalen Rand liegt
+        bool spawnVerticalEdge = (Random.Range(0f, 1f) > .5f); // Entscheide zuf�llig, ob der Spawn-Punkt an einem vertikalen Rand liegt
 
         if (spawnVerticalEdge)
         {
@@ -116,26 +116,26 @@ public class EnemySpawner : MonoBehaviour
             }
         }
 
-        return spawnPoint; // Gib den ausgewählten Spawn-Punkt zurück
+        return spawnPoint; // Gib den ausgew�hlten Spawn-Punkt zur�ck
     }
 
     public void GoToNextWave()
     {
-        currentWave++; // Inkrementiert den Wert von currentWave, um zur nächsten Welle zu wechseln
-        if (currentWave >= waves.Count) // Überprüft, ob der Wert von currentWave größer oder gleich der Anzahl der Wellen in der Liste ist
-    {
+        currentWave++;
+        if (currentWave >= waves.Count)
         {
-            currentWave = waves.Count - 1; // Setzt den Wert von currentWave auf das letzte Element der Liste, um sicherzustellen, dass er innerhalb des gültigen Bereichs bleibt
+            currentWave = waves.Count - 1;
         }
-        waveCounter = waves[currentWave].wavelength; // Setzt den Welle-Zähler auf die Dauer der aktuellen Welle
-        spawnCounter = waves[currentWave].timeBetweenSpawns; // Setzt den Spawn-Zähler auf die Zeit zwischen den Spawns der aktuellen Welle
+        waveCounter = waves[currentWave].wavelength;
+        spawnCounter = waves[currentWave].timeBetweenSpawns;
     }
 
-    [System.Serializable] // Kennzeichnet die Klasse als serialisierbar, um ihre Daten im Editor anpassen zu können
-    public class WaveInfo // Definition der Klasse WaveInfo, die serialisierbar ist
+    [System.Serializable]
+    public class WaveInfo
     {
-        public GameObject enemyToSpawn; // Das zu spawnende Gegnerobjekt für die Welle
-        public float wavelength = 10f; // Dauer der Welle
-        public float timeBetweenSpawns = 1f; // Zeit zwischen den Spawns innerhalb der Welle
+        public GameObject enemyToSpawn;
+        public float wavelength = 10f;
+        public float timeBetweenSpawns = 1f;
     }
 }
+
